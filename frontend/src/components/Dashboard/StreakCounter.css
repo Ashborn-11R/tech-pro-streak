@@ -1,0 +1,54 @@
+.streak-counter {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 24px;
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.2) 0%, rgba(236, 72, 153, 0.2) 100%);
+  border: 2px solid rgba(124, 58, 237, 0.3);
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+}
+
+.flame-container {
+  position: relative;
+}
+
+.flame {
+  font-size: 4rem;
+  filter: grayscale(100%) brightness(0.5);
+  transition: all 0.5s ease;
+}
+
+.flame.burning {
+  filter: grayscale(0%) brightness(1);
+  animation: flicker 2s ease-in-out infinite;
+}
+
+@keyframes flicker {
+  0%, 100% { transform: scale(1) rotate(-5deg); opacity: 1; }
+  50% { transform: scale(1.1) rotate(5deg); opacity: 0.95; }
+}
+
+.streak-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.streak-number {
+  font-size: 3rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #7c3aed 0%, #ec4899 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+}
+
+.streak-label {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
