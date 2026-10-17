@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { dashboardAPI, missionsAPI } from '../../services/api';
-import { showSuccess, showError } from '../../utils/toast';
+import { showSuccess, showError, showInfo, showWithAction } from '../../utils/toast';
 import MissionCard from './MissionCard';
 import StreakCounter from './StreakCounter';
 import ProgressBar from './ProgressBar';
@@ -11,7 +11,7 @@ function Dashboard() {
   const [dashboard, setDashboard] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [completingMission, setCompletingMission] = useState(null);
+  const [busyMission, setBusyMission] = useState(null);
 
   useEffect(() => {
     loadDashboard();
@@ -30,9 +30,26 @@ function Dashboard() {
     }
   };
 
-  const handleCompleteMission = async (missionNumber, notes) => {
-    setCompletingMission(missionNumber);
+  const handleUndoMission = async (missionNumber) => {
+    setBusyMission(missionNumber);
+    try {
+      const response = await missionsAPI.undo({ mission_number: missionNumber });
+      await loadDashboard();
+      showInfo(
+        response.data.streak_rolled_back
+          ? `Mission ${missionNumber} unticked. Streak restored to Day ${response.data.user.current_streak}.`
+          : `Mission ${missionNumber} unticked.`
+      );
+    } catch (err) {
+      showError('Failed to undo mission');
+      console.error(err);
+    } finally {
+      setBusyMission(null);
+    }
+  };
 
+  const handleCompleteMission = async (missionNumber, notes) => {
+    setBusyMission(missionNumber);
     try {
       const response = await missionsAPI.complete({
         mission_number: missionNumber,
@@ -41,16 +58,18 @@ function Dashboard() {
 
       await loadDashboard();
 
-      if (response.data.streak_increased) {
-        showSuccess(`🔥 Day ${response.data.user.current_streak} complete!`);
-      } else {
-        showSuccess(`Mission ${missionNumber} done!`);
-      }
+      const message = response.data.streak_increased
+        ? `🔥 Day ${response.data.user.current_streak} complete!`
+        : `Mission ${missionNumber} done!`;
+
+      showWithAction(message, 'Undo', () => handleUndoMission(missionNumber), {
+        position: 'top-center',
+      });
     } catch (err) {
       showError('Failed to complete mission');
       console.error(err);
     } finally {
-      setCompletingMission(null);
+      setBusyMission(null);
     }
   };
 
@@ -112,7 +131,8 @@ function Dashboard() {
               completed={mission[`mission_${template.mission_number}_completed`]}
               notes={mission[`mission_${template.mission_number}_notes`] || ''}
               onComplete={handleCompleteMission}
-              loading={completingMission === template.mission_number}
+              onUndo={handleUndoMission}
+              loading={busyMission === template.mission_number}
             />
           ))}
         </div>

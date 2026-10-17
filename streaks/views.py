@@ -128,6 +128,36 @@ def complete_mission(request):
                    (f' 🔥 Streak: {user.current_streak}!' if streak_increased else '')
     })
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def undo_mission(request):
+    """Untick a mission for today (rolls the streak back if the day was complete)"""
+    user = request.user
+    mission_number = request.data.get('mission_number')
+
+    if mission_number not in [1, 2, 3]:
+        return Response(
+            {'error': 'Invalid mission number. Must be 1, 2, or 3.'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    user_today = get_user_local_date(user.timezone)
+    try:
+        mission = DailyMission.objects.get(user=user, mission_date=user_today)
+    except DailyMission.DoesNotExist:
+        return Response({'error': 'No missions for today.'}, status=status.HTTP_404_NOT_FOUND)
+
+    streak_rolled_back = mission.undo_mission(mission_number)
+
+    user.refresh_from_db()
+
+    return Response({
+        'mission': DailyMissionSerializer(mission).data,
+        'user': UserSerializer(user).data,
+        'streak_rolled_back': streak_rolled_back,
+        'level_info': get_level_info(user.current_streak),
+        'message': f'Mission {mission_number} unticked.'
+    })
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

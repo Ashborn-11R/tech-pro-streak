@@ -1,29 +1,28 @@
 import { useState } from 'react';
 import './MissionCard.css';
 
-function MissionCard({ missionNumber, title, description, completed, notes, onComplete, loading }) {
+function MissionCard({
+  missionNumber, title, description, completed, notes,
+  onComplete, onUndo, loading,
+}) {
   const [showNotes, setShowNotes] = useState(false);
   const [noteText, setNoteText] = useState(notes || '');
 
-  const handleComplete = () => {
-    if (!completed) {
+  const handleToggle = () => {
+    if (loading) return;
+    if (completed) {
+      onUndo(missionNumber);
+    } else {
       onComplete(missionNumber, noteText);
     }
   };
 
-  const getIcon = () => {
-    switch(missionNumber) {
-      case 1: return '💬';
-      case 2: return '⚡';
-      case 3: return '🎯';
-      default: return '✨';
-    }
-  };
+  const icons = { 1: '💬', 2: '⚡', 3: '🎯' };
 
   return (
     <div className={`mission-card ${completed ? 'completed' : ''}`}>
       <div className="mission-header">
-        <div className="mission-icon">{getIcon()}</div>
+        <div className="mission-icon">{icons[missionNumber] || '✨'}</div>
         <div className="mission-info">
           <h3>{title}</h3>
           <p>{description}</p>
@@ -32,8 +31,8 @@ function MissionCard({ missionNumber, title, description, completed, notes, onCo
           <input
             type="checkbox"
             checked={completed}
-            onChange={handleComplete}
-            disabled={completed || loading}
+            onChange={handleToggle}
+            disabled={loading}
             id={`mission-${missionNumber}`}
           />
           <label htmlFor={`mission-${missionNumber}`}>
@@ -44,13 +43,13 @@ function MissionCard({ missionNumber, title, description, completed, notes, onCo
 
       {!completed && (
         <div className="mission-notes">
-          <button 
+          <button
             className="toggle-notes-btn"
             onClick={() => setShowNotes(!showNotes)}
           >
             {showNotes ? '− Hide Notes' : '+ Add Notes'}
           </button>
-          
+
           {showNotes && (
             <textarea
               value={noteText}

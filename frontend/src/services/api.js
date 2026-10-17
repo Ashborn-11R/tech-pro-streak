@@ -72,6 +72,7 @@ export const dashboardAPI = {
 export const missionsAPI = {
   getToday: () => api.get('/missions/today/'),
   complete: (data) => api.post('/missions/complete/', data),
+  undo: (data) => api.post('/missions/undo/', data),
   getHistory: (limit = 30) => api.get(`/missions/history/?limit=${limit}`),
 };
 

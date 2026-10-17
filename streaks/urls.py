@@ -14,7 +14,8 @@ urlpatterns = [
     path('missions/today/', views.get_todays_missions, name='todays_missions'),
     path('missions/complete/', views.complete_mission, name='complete_mission'),
     path('missions/history/', views.get_mission_history, name='mission_history'),
-    
+    path('missions/undo/', views.undo_mission, name='undo_mission'),
+
     # Streak
     path('streak/status/', views.get_streak_status, name='streak_status'),
     path('streak/history/', views.get_streak_history, name='streak_history'),

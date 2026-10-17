@@ -104,68 +104,108 @@ class DailyMission(models.Model):
     """
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='daily_missions')
     mission_date = models.DateField(default=date.today)
-    
+
     # Mission 1: Communicate & Learn
     mission_1_completed = models.BooleanField(default=False)
     mission_1_notes = models.TextField(blank=True, null=True)
     mission_1_completed_at = models.DateTimeField(null=True, blank=True)
-    
+
     # Mission 2: Build & Think
     mission_2_completed = models.BooleanField(default=False)
     mission_2_notes = models.TextField(blank=True, null=True)
     mission_2_completed_at = models.DateTimeField(null=True, blank=True)
-    
+
     # Mission 3: Reflect & Connect
     mission_3_completed = models.BooleanField(default=False)
     mission_3_notes = models.TextField(blank=True, null=True)
     mission_3_completed_at = models.DateTimeField(null=True, blank=True)
-    
+
     # Overall completion
     all_completed = models.BooleanField(default=False)
     completed_at = models.DateTimeField(null=True, blank=True)
-    
+
+    # Snapshot of the user's stats before this day was completed (used by undo)
+    prev_current_streak = models.IntegerField(null=True, blank=True)
+    prev_longest_streak = models.IntegerField(null=True, blank=True)
+    prev_last_completion_date = models.DateField(null=True, blank=True)
+
     class Meta:
         unique_together = ['user', 'mission_date']
         ordering = ['-mission_date']
-    
+
     def __str__(self):
         return f"{self.user.username} - {self.mission_date} - {'✅' if self.all_completed else '⏳'}"
-    
+
     def check_all_completed(self):
-        """Check if all 3 missions are done"""
+        """Check if all 3 missions are done; if so, save a snapshot and bump the streak"""
         if self.mission_1_completed and self.mission_2_completed and self.mission_3_completed:
             if not self.all_completed:  # Only increment streak once
+                user = self.user
+                self.prev_current_streak = user.current_streak
+                self.prev_longest_streak = user.longest_streak
+                self.prev_last_completion_date = user.last_completion_date
+
                 self.all_completed = True
                 self.completed_at = timezone.now()
                 self.save()
-                
-                # Increment user's streak
-                self.user.increment_streak()
+
+                user.increment_streak()
                 return True
         return False
-    
+
     def complete_mission(self, mission_number, notes=None):
         """Complete a specific mission"""
-        if mission_number == 1:
-            self.mission_1_completed = True
-            self.mission_1_completed_at = timezone.now()
+        if mission_number in (1, 2, 3):
+            setattr(self, f'mission_{mission_number}_completed', True)
+            setattr(self, f'mission_{mission_number}_completed_at', timezone.now())
             if notes:
-                self.mission_1_notes = notes
-        elif mission_number == 2:
-            self.mission_2_completed = True
-            self.mission_2_completed_at = timezone.now()
-            if notes:
-                self.mission_2_notes = notes
-        elif mission_number == 3:
-            self.mission_3_completed = True
-            self.mission_3_completed_at = timezone.now()
-            if notes:
-                self.mission_3_notes = notes
-        
+                setattr(self, f'mission_{mission_number}_notes', notes)
+
         self.save()
         return self.check_all_completed()
 
+    def undo_mission(self, mission_number):
+        """
+        Untick one mission. If the day was fully completed, roll the streak back.
+        Returns True if the streak was rolled back.
+        """
+        if mission_number not in (1, 2, 3):
+            return False
 
+        was_all_completed = self.all_completed
+
+        setattr(self, f'mission_{mission_number}_completed', False)
+        setattr(self, f'mission_{mission_number}_completed_at', None)
+
+        rolled_back = False
+        if was_all_completed:
+            user = self.user
+
+            if self.prev_current_streak is not None:
+                user.current_streak = self.prev_current_streak
+                user.longest_streak = self.prev_longest_streak or 0
+                user.last_completion_date = self.prev_last_completion_date
+            else:
+                # Completed before snapshots existed: best-effort rollback
+                user.current_streak = max(0, user.current_streak - 1)
+                user.last_completion_date = (
+                    self.mission_date - timedelta(days=1) if user.current_streak > 0 else None
+                )
+
+            user.total_days_completed = max(0, user.total_days_completed - 1)
+            user.update_level()  # recalculates the level and saves
+
+            self.all_completed = False
+            self.completed_at = None
+            self.prev_current_streak = None
+            self.prev_longest_streak = None
+            self.prev_last_completion_date = None
+            rolled_back = True
+
+        self.save()
+        return rolled_back
+
+    
 class StreakHistory(models.Model):
     """
     Records all past streaks (for history page)
