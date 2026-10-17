@@ -1,3 +1,5 @@
+from rest_framework import status, generics
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -7,7 +9,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .models import DailyMission, StreakHistory, MissionTemplate, MotivationalQuote
 from .serializers import (
     UserRegistrationSerializer, UserSerializer, DailyMissionSerializer,
-    StreakHistorySerializer, MissionTemplateSerializer, MotivationalQuoteSerializer
+    StreakHistorySerializer, MissionTemplateSerializer, MotivationalQuoteSerializer,AdminMissionTemplateSerializer, AdminQuoteSerializer
 )
 from .utils import (
     apply_streak_reset, calculate_streak_stats, get_level_info,
@@ -233,3 +235,28 @@ def get_dashboard(request):
         'days_missed': days_missed,
         'time_until_midnight': get_time_until_midnight(user.timezone)
     })
+
+# ============= ADMIN (staff only) =============
+
+class AdminMissionList(generics.ListAPIView):
+    queryset = MissionTemplate.objects.all().order_by('mission_number', 'id')
+    serializer_class = AdminMissionTemplateSerializer
+    permission_classes = [IsAdminUser]
+
+
+class AdminMissionDetail(generics.RetrieveUpdateAPIView):
+    queryset = MissionTemplate.objects.all()
+    serializer_class = AdminMissionTemplateSerializer
+    permission_classes = [IsAdminUser]
+
+
+class AdminQuoteList(generics.ListCreateAPIView):
+    queryset = MotivationalQuote.objects.all().order_by('-id')
+    serializer_class = AdminQuoteSerializer
+    permission_classes = [IsAdminUser]
+
+
+class AdminQuoteDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = MotivationalQuote.objects.all()
+    serializer_class = AdminQuoteSerializer
+    permission_classes = [IsAdminUser]

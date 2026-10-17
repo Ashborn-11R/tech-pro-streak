@@ -82,4 +82,14 @@ export const streakAPI = {
   getHistory: () => api.get('/streak/history/'),
 };
 
+// Admin API
+export const adminAPI = {
+  getMissions: () => api.get('/admin/missions/'),
+  updateMission: (id, data) => api.patch(`/admin/missions/${id}/`, data),
+  getQuotes: () => api.get('/admin/quotes/'),
+  createQuote: (data) => api.post('/admin/quotes/', data),
+  updateQuote: (id, data) => api.patch(`/admin/quotes/${id}/`, data),
+  deleteQuote: (id) => api.delete(`/admin/quotes/${id}/`),
+};
+
 export default api;

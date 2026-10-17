@@ -22,4 +22,10 @@ urlpatterns = [
     
     # Dashboard
     path('dashboard/', views.get_dashboard, name='dashboard'),
+
+    # Admin
+    path('admin/missions/', views.AdminMissionList.as_view()),
+    path('admin/missions/<int:pk>/', views.AdminMissionDetail.as_view()),
+    path('admin/quotes/', views.AdminQuoteList.as_view()),
+    path('admin/quotes/<int:pk>/', views.AdminQuoteDetail.as_view()),
 ]

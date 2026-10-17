@@ -39,11 +39,11 @@ class UserSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'username', 'email', 'timezone',
             'current_streak', 'longest_streak', 'total_days_completed',
-            'last_completion_date', 'level'
+            'last_completion_date', 'level','is_staff'
         ]
         read_only_fields = [
             'current_streak', 'longest_streak', 'total_days_completed',
-            'last_completion_date', 'level'
+            'last_completion_date', 'level','is_staff'
         ]
 
 
@@ -87,3 +87,15 @@ class MotivationalQuoteSerializer(serializers.ModelSerializer):
     class Meta:
         model = MotivationalQuote
         fields = ['id', 'quote', 'author']
+
+class AdminMissionTemplateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MissionTemplate
+        fields = ['id', 'mission_number', 'title', 'description', 'active']
+
+
+class AdminQuoteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MotivationalQuote
+        fields = ['id', 'quote', 'author', 'active']
+

@@ -1,3 +1,4 @@
+import { useReminders } from '../../utils/reminders';
 import { newlyUnlocked } from '../../utils/achievements';
 import AchievementModal from './AchievementModal';
 import { useState, useEffect } from 'react';
@@ -15,6 +16,9 @@ function Dashboard() {
   const [error, setError] = useState('');
   const [busyMission, setBusyMission] = useState(null);
   const [unlockedQueue, setUnlockedQueue] = useState([]);
+  
+  useReminders(dashboard?.time_until_midnight?.total_seconds, dashboard?.mission?.all_completed);
+  
   useEffect(() => {
     loadDashboard();
   }, []);

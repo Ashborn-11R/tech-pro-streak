@@ -52,3 +52,22 @@
 .badge-icon { font-size: 2rem; }
 .badge-tile small { color: rgba(255,255,255,.5); font-size: .72rem; line-height: 1.4; }
 .page { padding-bottom: 140px; }
+.page .panel { margin-bottom: 20px; }
+.admin-item { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,.08); }
+.admin-tag { font-size: .7rem; letter-spacing: 2px; text-transform: uppercase; color: #a78bfa; font-weight: 700; }
+.field {
+  width: 100%; padding: 12px 14px; border-radius: 10px; font: inherit; color: #fff;
+  background: rgba(0,0,0,.35); border: 1px solid rgba(255,255,255,.12);
+}
+.field:focus { outline: none; border-color: #7c3aed; }
+button.btn-wide { cursor: pointer; font: inherit; width: 100%; }
+.quote-row {
+  display: flex; justify-content: space-between; gap: 14px; align-items: flex-start;
+  padding: 14px 0; border-top: 1px solid rgba(255,255,255,.08);
+}
+.quote-row.off { opacity: .45; }
+.quote-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.quote-actions button {
+  padding: 6px 12px; border-radius: 8px; cursor: pointer; color: #fff;
+  background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12);
+}
