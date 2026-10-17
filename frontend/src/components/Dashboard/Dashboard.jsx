@@ -1,3 +1,5 @@
+import { newlyUnlocked } from '../../utils/achievements';
+import AchievementModal from './AchievementModal';
 import { useState, useEffect } from 'react';
 import { dashboardAPI, missionsAPI } from '../../services/api';
 import { showSuccess, showError, showInfo, showWithAction } from '../../utils/toast';
@@ -12,7 +14,7 @@ function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [busyMission, setBusyMission] = useState(null);
-
+  const [unlockedQueue, setUnlockedQueue] = useState([]);
   useEffect(() => {
     loadDashboard();
   }, []);
@@ -56,7 +58,11 @@ function Dashboard() {
         notes: notes || '',
       });
 
+      const before = dashboard.user;
       await loadDashboard();
+      const fresh = response.data.user;
+      const unlocked = newlyUnlocked(before, fresh);
+      if (unlocked.length) setUnlockedQueue((q) => [...q, ...unlocked]);
 
       const message = response.data.streak_increased
         ? `🔥 Day ${response.data.user.current_streak} complete!`
@@ -156,6 +162,13 @@ function Dashboard() {
           <span className="stat-value">{user.total_days_completed}</span>
         </div>
       </div>
+      
+      {unlockedQueue.length > 0 && (
+        <AchievementModal
+          achievement={unlockedQueue[0]}
+          onClose={() => setUnlockedQueue((q) => q.slice(1))}
+        />
+      )}
     </div>
   );
 }

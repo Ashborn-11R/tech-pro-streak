@@ -42,3 +42,13 @@
   transition: all .2s ease;
 }
 .btn-wide:hover { border-color: #7c3aed; background: rgba(124,58,237,.15); }
+.badge-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+.badge-tile {
+  display: flex; flex-direction: column; align-items: center; text-align: center; gap: 4px;
+  padding: 16px 10px; border-radius: 14px; border: 1px solid rgba(255,255,255,.1);
+  background: rgba(255,255,255,.03); opacity: .45; filter: grayscale(.8);
+}
+.badge-tile.on { opacity: 1; filter: none; background: rgba(124,58,237,.1); }
+.badge-icon { font-size: 2rem; }
+.badge-tile small { color: rgba(255,255,255,.5); font-size: .72rem; line-height: 1.4; }
+.page { padding-bottom: 140px; }

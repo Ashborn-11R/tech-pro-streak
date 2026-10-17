@@ -1,3 +1,5 @@
+import StreakCalendar from './StreakCalendar';
+import BadgeShelf from './BadgeShelf';
 import { useEffect, useState } from 'react';
 import { authAPI, missionsAPI } from '../../services/api';
 import './Pages.css';
@@ -27,7 +29,9 @@ export default function History() {
           <span className="stat-num">{user?.total_days_completed ?? 0}</span>
         </div>
       </div>
-
+      {user && <BadgeShelf user={user} />}
+      <StreakCalendar history={days} />
+      
       <h2 className="page-title">Log History</h2>
 
       {days.length === 0 ? (
