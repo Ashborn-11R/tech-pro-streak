@@ -158,3 +158,10 @@ def get_level_info(current_streak):
         'progress_percentage': progress,
         'days_to_next_level': next_level['min'] - current_streak if next_level else 0
     }
+def apply_streak_reset(user):
+    """Reset the streak if days were missed. Returns (was_reset, days_missed)."""
+    needs_reset, reason, days_missed = should_reset_streak(user)
+    if needs_reset and user.current_streak > 0:
+        user.reset_streak()
+        return True, days_missed
+    return False, 0

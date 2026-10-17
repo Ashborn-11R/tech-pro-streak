@@ -44,30 +44,36 @@ class User(AbstractUser):
         self.save()
     
     def increment_streak(self):
-        """Increment streak by 1 and update stats"""
-        self.current_streak += 1
+        """Gap-aware: continue only if last completion was yesterday."""
+        from .utils import get_user_local_date
+        today = get_user_local_date(self.timezone)
+
+        if self.last_completion_date == today:
+            return  # already counted today
+
+        if self.last_completion_date == today - timedelta(days=1):
+            self.current_streak += 1
+        else:
+            self.current_streak = 1  # first day, or the streak was broken
+
         self.total_days_completed += 1
-        
-        # Update longest streak if needed
         if self.current_streak > self.longest_streak:
             self.longest_streak = self.current_streak
-        
-        self.last_completion_date = date.today()
+
+        self.last_completion_date = today
         self.update_level()
         self.save()
-    
+
     def reset_streak(self):
-        """Reset streak to 0 (when user misses a day)"""
-        # Save to history before resetting
-        if self.current_streak > 0:
+        """Save the broken streak to history, then reset to 0."""
+        if self.current_streak > 0 and self.last_completion_date:
             StreakHistory.objects.create(
                 user=self,
                 streak_count=self.current_streak,
-                started_at=date.today() - timedelta(days=self.current_streak),
-                ended_at=date.today() - timedelta(days=1),
-                is_active=False
+                started_at=self.last_completion_date - timedelta(days=self.current_streak - 1),
+                ended_at=self.last_completion_date,
+                is_active=False,
             )
-        
         self.current_streak = 0
         self.level = 'Beginner'
         self.save()
